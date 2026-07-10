@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ExternalLink, ArrowUpRight } from 'lucide-react';
+import { ExternalLink, ArrowUpRight, X } from 'lucide-react';
 import { Github } from './BrandIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeUpVariants, inViewProps } from '../utils/animations';
@@ -9,7 +9,9 @@ interface Project {
   title: string;
   category: 'frontend' | 'backend' | 'fullstack';
   description: string;
+  longDescription: string;
   tech: string[];
+  features: string[];
   githubUrl: string;
   demoUrl: string;
 }
@@ -37,10 +39,10 @@ const categoryColors: Record<string, string> = {
 
 export default function Projects() {
   const [filter, setFilter] = useState<'all' | 'frontend' | 'backend' | 'fullstack'>('all');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   // ==========================================
-  // CONFIGURATION DES PROJETS (MODIFIABLE)
-  // Remplacez les liens et les textes ci-dessous par vos propres projets.
+  // CONFIGURATION DES PROJETS (AVEC DETAILS)
   // ==========================================
   const projectsData: Project[] = [
     {
@@ -48,6 +50,13 @@ export default function Projects() {
       title: 'Supa-Commerce',
       category: 'fullstack',
       description: "Une plateforme e-commerce moderne intégrant la gestion des paniers, l'authentification sécurisée des utilisateurs et les paiements Stripe.",
+      longDescription: "Supa-Commerce est une application e-commerce complète conçue pour offrir une expérience d'achat rapide, fluide et sécurisée. Elle intègre un système d'authentification robuste avec gestion de sessions, une base de données relationnelle pour gérer les produits et commandes, et l'API Stripe pour la gestion des transactions financières.",
+      features: [
+        "Intégration complète et sécurisée des paiements Stripe",
+        "Système d'authentification utilisateur (JWT & cookies sécurisés)",
+        "Gestion d'état globale pour le panier d'achat",
+        "Panneau d'administration pour la gestion des stocks et produits"
+      ],
       tech: ['React js', 'Next js', 'Postgresql', 'Express js'],
       githubUrl: 'https://github.com/de-souza-jeanpaul/supa-commerce',
       demoUrl: 'https://supa-commerce.demo.com',
@@ -57,6 +66,13 @@ export default function Projects() {
       title: 'Apex Task-Flow',
       category: 'frontend',
       description: "Un gestionnaire de tâches de style Kanban interactif avec gestion des états locaux et synchronisation Firebase pour le travail d'équipe.",
+      longDescription: "Apex Task-Flow simplifie la gestion de projets et de tâches pour les équipes. Inspiré des tableaux Kanban, il permet de réorganiser visuellement ses tâches par glisser-déposer (Drag and Drop). Les données sont synchronisées instantanément avec Firebase Firestore, ce qui permet à plusieurs collaborateurs de travailler en temps réel.",
+      features: [
+        "Tableau Kanban avec système intuitif de glisser-déposer",
+        "Synchronisation cloud en temps réel avec Firebase Firestore",
+        "Filtres de recherche et de priorité des tâches",
+        "Thème sombre natif et interface ultra-réactive"
+      ],
       tech: ['React js', 'Firebase', 'CSS', 'HTML'],
       githubUrl: 'https://github.com/de-souza-jeanpaul/apex-taskflow',
       demoUrl: 'https://apex-taskflow.demo.com',
@@ -66,6 +82,13 @@ export default function Projects() {
       title: 'Edu-Manage API',
       category: 'backend',
       description: 'API REST robuste de gestion académique avec authentification OAuth2, gestion de rôles complexes et génération de rapports automatiques.',
+      longDescription: "Edu-Manage API est le moteur d'une plateforme scolaire. Elle permet de gérer les inscriptions, les cours, les notes et les présences. La sécurité est au cœur du système avec un contrôle d'accès basé sur les rôles (RBAC) et un mécanisme d'authentification OAuth2.",
+      features: [
+        "Authentification sécurisée avec OAuth2 & jetons d'accès",
+        "Contrôle d'accès strict selon les rôles (Admin, Prof, Élève)",
+        "Génération automatique de bulletins scolaires (PDF/CSV)",
+        "Endpoints documentés de manière interactive avec Swagger"
+      ],
       tech: ['Express js', 'SQL', 'Postman', 'Node js'],
       githubUrl: 'https://github.com/de-souza-jeanpaul/edu-manage-api',
       demoUrl: 'https://edu-manage-api.demo.com',
@@ -75,6 +98,13 @@ export default function Projects() {
       title: 'Py-Data-Analyzer',
       category: 'backend',
       description: "Script Python complet permettant d'extraire, nettoyer et modéliser des volumes de données statistiques avec des graphiques interactifs.",
+      longDescription: "Py-Data-Analyzer est un outil d'ingénierie et d'analyse de données. Il se connecte à des bases de données relationnelles pour extraire des volumes d'informations, applique des scripts de nettoyage (handling des valeurs nulles, doublons) et calcule des modélisations statistiques représentées sous forme graphique.",
+      features: [
+        "Nettoyage automatique et standardisation des données",
+        "Analyses statistiques descriptives et prédictives",
+        "Visualisations interactives exportables",
+        "Connexion sécurisée aux bases de données SQL / PostgreSQL"
+      ],
       tech: ['Python', 'SQL', 'Postgresql'],
       githubUrl: 'https://github.com/de-souza-jeanpaul/py-data-analyzer',
       demoUrl: 'https://py-data-analyzer.demo.com',
@@ -86,7 +116,7 @@ export default function Projects() {
 
   return (
     <section id="projects" className="py-24 px-6 relative">
-      <div className="container max-w-5xl">
+      <div className="container max-w-5xl mx-auto">
 
         {/* Section Title */}
         <motion.div
@@ -115,7 +145,7 @@ export default function Projects() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => setFilter(cat)}
-              className={`px-6 py-2.5 rounded-2xl font-body text-sm font-semibold transition-all duration-300 border ${
+              className={`px-6 py-2.5 rounded-2xl font-body text-sm font-semibold transition-all duration-300 border cursor-pointer ${
                 filter === cat
                   ? 'bg-gradient-to-r from-blue-500 to-blue-700 border-transparent text-white shadow-lg shadow-blue-600/25'
                   : 'text-[var(--text-secondary)] border-[var(--border-color)] bg-[var(--bg-card)] hover:border-blue-500/40 hover:text-[var(--electric)]'
@@ -137,7 +167,8 @@ export default function Projects() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
-                className="group rounded-2xl glass-effect border border-[var(--border-color)] overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-600/10 hover:border-blue-500/20 flex flex-col"
+                onClick={() => setSelectedProject(project)}
+                className="group rounded-2xl glass-effect border border-[var(--border-color)] overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-600/10 hover:border-blue-500/20 flex flex-col cursor-pointer"
               >
                 {/* Project Visual — initiales */}
                 <div className={`relative aspect-video overflow-hidden bg-gradient-to-br ${categoryColors[project.category]} flex items-center justify-center`}>
@@ -145,32 +176,16 @@ export default function Projects() {
                     {getInitials(project.title)}
                   </span>
 
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-blue-950/60 backdrop-blur-sm">
-                    <motion.a
-                      href={project.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      whileHover={{ scale: 1.08, y: -2 }}
+                  {/* Hover overlay - Single CTA to open the modal */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-blue-950/65 backdrop-blur-sm">
+                    <motion.button
+                      whileHover={{ scale: 1.05, y: -2 }}
                       whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-900 rounded-xl font-body text-sm font-semibold hover:bg-blue-500 hover:text-white transition-all duration-200 shadow-lg"
+                      className="flex items-center gap-2 px-5 py-3 bg-white text-gray-900 rounded-xl font-body text-sm font-bold shadow-lg hover:bg-blue-600 hover:text-white transition-all duration-200 cursor-pointer"
                     >
-                      <Github size={16} />
-                      GitHub
-                      <ArrowUpRight size={14} />
-                    </motion.a>
-                    <motion.a
-                      href={project.demoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      whileHover={{ scale: 1.08, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-white text-gray-900 rounded-xl font-body text-sm font-semibold hover:bg-blue-500 hover:text-white transition-all duration-200 shadow-lg"
-                    >
-                      <ExternalLink size={16} />
-                      Démo
-                      <ArrowUpRight size={14} />
-                    </motion.a>
+                      Détails du projet
+                      <ArrowUpRight size={15} />
+                    </motion.button>
                   </div>
                 </div>
 
@@ -194,6 +209,109 @@ export default function Projects() {
               </motion.div>
             ))}
           </motion.div>
+        </AnimatePresence>
+
+        {/* Project Details Modal */}
+        <AnimatePresence>
+          {selectedProject && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedProject(null)}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md cursor-pointer"
+            >
+              <motion.div
+                initial={{ scale: 0.92, y: 15, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.92, y: 15, opacity: 0 }}
+                transition={{ type: 'spring', damping: 26, stiffness: 330 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-2xl bg-[var(--bg-app)] border border-[var(--border-color)] p-6 md:p-8 rounded-3xl shadow-2xl overflow-y-auto max-h-[85vh] text-left cursor-default"
+              >
+                {/* Close Button */}
+                <button
+                  onClick={() => setSelectedProject(null)}
+                  className="absolute top-4 right-4 p-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-red-500/30 hover:text-red-500 transition-colors cursor-pointer"
+                  aria-label="Fermer"
+                >
+                  <X size={18} />
+                </button>
+
+                {/* Modal category badge */}
+                <span className="px-3 py-1 rounded-full bg-blue-500/10 text-[var(--electric)] text-xs font-body font-semibold uppercase tracking-wide border border-blue-500/15 w-fit block mb-3">
+                  {selectedProject.category}
+                </span>
+
+                {/* Modal title */}
+                <h3 className="text-2xl md:text-3xl font-bold font-heading mb-4 text-[var(--text-primary)]">
+                  {selectedProject.title}
+                </h3>
+
+                {/* Modal long description */}
+                <p className="text-sm md:text-base text-[var(--text-secondary)] font-light leading-relaxed mb-6 font-body">
+                  {selectedProject.longDescription}
+                </p>
+
+                {/* Key features */}
+                {selectedProject.features && (
+                  <div className="mb-6">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] font-body mb-3">
+                      Fonctionnalités Clés
+                    </h4>
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm text-[var(--text-secondary)] font-body font-light">
+                      {selectedProject.features.map((feat, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="text-[var(--electric)] mt-1 font-bold">•</span>
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Technologies */}
+                <div className="mb-8">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] font-body mb-3">
+                    Technologies Utilisées
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProject.tech.map((t) => (
+                      <span key={t} className="px-3 py-1.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-mono text-[var(--text-muted)]">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action CTA Buttons */}
+                <div className="flex flex-wrap gap-3 pt-2 border-t border-[var(--border-color)]">
+                  <motion.a
+                    href={selectedProject.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ scale: 1.02, y: -1 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-2xl font-body text-sm font-semibold hover:shadow-lg hover:shadow-blue-600/20 transition-all cursor-pointer"
+                  >
+                    <Github size={16} />
+                    Code Source (GitHub)
+                  </motion.a>
+                  <motion.a
+                    href={selectedProject.demoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ scale: 1.02, y: -1 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-2 px-6 py-3.5 border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] rounded-2xl font-body text-sm font-semibold hover:border-blue-500/40 hover:text-[var(--electric)] transition-all cursor-pointer"
+                  >
+                    <ExternalLink size={16} />
+                    Voir la Démo Live
+                  </motion.a>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
     </section>

@@ -66,7 +66,7 @@ export default function Hero() {
           {/* Full Name */}
           <motion.h1
             {...fadeUp(0.1)}
-            className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-4 font-heading leading-none"
+            className="text-7xl md:text-8xl lg:text-[6.5rem] tracking-wider mb-4 font-heading leading-[0.9]"
           >
             de-SOUZA
             <br />

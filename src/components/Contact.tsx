@@ -28,8 +28,8 @@ const contactInfo = [
   {
     icon: <Mail size={18} />,
     label: 'Email professionnel',
-    value: 'jeanpaul.desouza@outlook.com',
-    href: 'mailto:jeanpaul.desouza@outlook.com',
+    value: 'amirjeanpaul9@gmail.com',
+    href: 'mailto:amirjeanpaul9@gmail.com',
     mono: true,
   },
   {
