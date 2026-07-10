@@ -170,11 +170,10 @@ export default function Contact() {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`p-4 rounded-2xl flex items-start gap-3 border text-sm font-body font-medium ${
-                    status === 'success'
+                  className={`p-4 rounded-2xl flex items-start gap-3 border text-sm font-body font-medium ${status === 'success'
                       ? 'bg-blue-500/10 border-blue-500/20 text-blue-400'
                       : 'bg-red-500/10 border-red-500/20 text-red-400'
-                  }`}
+                    }`}
                 >
                   {status === 'success' ? <CheckCircle size={20} className="shrink-0" /> : <AlertCircle size={20} className="shrink-0" />}
                   <span>{statusMessage}</span>

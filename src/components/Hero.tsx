@@ -66,7 +66,7 @@ export default function Hero() {
           {/* Full Name */}
           <motion.h1
             {...fadeUp(0.1)}
-            className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-4 font-heading leading-none"
+            className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-4 font-heading leading-none"
           >
             de-SOUZA
             <br />
@@ -160,7 +160,7 @@ export default function Hero() {
           initial={{ opacity: 0, x: 40, scale: 0.95 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1], delay: 0.2 }}
-          className="relative flex-shrink-0 hidden lg:block"
+          className="relative flex-shrink-0  lg:block"
         >
           {/* Glow derrière la photo */}
           <div className="absolute inset-[-24px] rounded-[60px] bg-gradient-to-br from-blue-500/45 to-blue-800/25 blur-[70px]" />
