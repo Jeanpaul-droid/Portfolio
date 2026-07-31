@@ -69,7 +69,7 @@ export default function About() {
   const timelineItems = activeTab === 'experience' ? experiences : education;
 
   return (
-    <section id="about" className="py-24 px-6 relative">
+    <section id="about" className="py-16 md:py-24 px-4 sm:px-6 relative">
       <div className="container max-w-5xl mx-auto">
         
         {/* Section Header */}
@@ -78,7 +78,7 @@ export default function About() {
           variants={staggerContainer}
           className="flex flex-col items-center mb-16"
         >
-          <motion.h2 variants={staggerItem} className="text-5xl md:text-6xl font-bold font-heading mb-4 text-center tracking-wider uppercase">
+          <motion.h2 variants={staggerItem} className="text-3xl md:text-4xl font-bold font-heading mb-4 text-center uppercase">
             À Propos de <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Moi</span>
           </motion.h2>
           <motion.div variants={staggerItem} className="w-16 h-1 bg-gradient-to-r from-blue-500 to-blue-700 rounded-full mb-4" />
@@ -88,13 +88,16 @@ export default function About() {
         </motion.div>
 
         {/* Bento Grid Layout (12 columns on desktop) */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+        <motion.div
+          {...inViewProps}
+          variants={staggerContainer}
+          className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch"
+        >
           
           {/* Card 1: Bio & Rigueur (md:col-span-8) */}
           <motion.div
-            {...inViewProps}
             variants={staggerItem}
-            className="md:col-span-8 p-7 md:p-8 rounded-3xl glass-effect border border-[var(--border-color)] flex flex-col justify-between text-left"
+            className="md:col-span-8 p-5 md:p-8 rounded-3xl glass-effect border border-[var(--border-color)] flex flex-col justify-between text-left"
           >
             <div>
               <div className="flex items-center gap-3 mb-5 text-[var(--electric)]">
@@ -120,9 +123,8 @@ export default function About() {
 
           {/* Card 2: Stats (md:col-span-4) */}
           <motion.div
-            {...inViewProps}
             variants={staggerItem}
-            className="md:col-span-4 grid grid-rows-3 gap-4"
+            className="md:col-span-4 grid grid-cols-1 sm:grid-cols-3 md:grid-cols-1 gap-4"
           >
             {stats.map((stat, idx) => (
               <div
@@ -146,9 +148,8 @@ export default function About() {
 
           {/* Card 3: Profil Hybride / Passerelle IoT (md:col-span-4) */}
           <motion.div
-            {...inViewProps}
             variants={staggerItem}
-            className="md:col-span-4 p-7 md:p-8 rounded-3xl glass-effect border border-[var(--border-color)] flex flex-col justify-between hover:border-blue-500/20 transition-all duration-300 text-left"
+            className="md:col-span-4 p-5 md:p-8 rounded-3xl glass-effect border border-[var(--border-color)] flex flex-col justify-between hover:border-blue-500/20 transition-all duration-300 text-left"
           >
             <div>
               <div className="flex items-center gap-3 mb-5 text-[var(--electric)]">
@@ -178,13 +179,12 @@ export default function About() {
 
           {/* Card 4: Timeline Panel (md:col-span-8 md:row-span-2) */}
           <motion.div
-            {...inViewProps}
             variants={staggerItem}
-            className="md:col-span-8 md:row-span-2 p-7 md:p-8 rounded-3xl glass-effect border border-[var(--border-color)] flex flex-col justify-between text-left"
+            className="md:col-span-8 md:row-span-2 p-5 md:p-8 rounded-3xl glass-effect border border-[var(--border-color)] flex flex-col justify-between text-left"
           >
             <div className="w-full">
               {/* Tab Selector */}
-              <div className="flex gap-2 mb-7 bg-[var(--bg-card)] border border-[var(--border-color)] p-1.5 rounded-2xl w-fit">
+              <div className="flex gap-2 mb-7 bg-[var(--bg-card)] border border-[var(--border-color)] p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto">
                 <button
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-body text-sm font-semibold transition-all duration-300 cursor-pointer ${
                     activeTab === 'experience'
@@ -247,9 +247,8 @@ export default function About() {
 
           {/* Card 5: Hobbies / Passions (md:col-span-4) */}
           <motion.div
-            {...inViewProps}
             variants={staggerItem}
-            className="md:col-span-4 p-7 md:p-8 rounded-3xl glass-effect border border-[var(--border-color)] flex flex-col text-left hover:border-blue-500/20 transition-all duration-300"
+            className="md:col-span-4 p-5 md:p-8 rounded-3xl glass-effect border border-[var(--border-color)] flex flex-col text-left hover:border-blue-500/20 transition-all duration-300"
           >
             <div className="flex items-center gap-3 mb-5 text-[var(--electric)]">
               <Sparkles size={22} />
@@ -274,7 +273,7 @@ export default function About() {
             </div>
           </motion.div>
 
-        </div>
+        </motion.div>
       </div>
     </section>
   );

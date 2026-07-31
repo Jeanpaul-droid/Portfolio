@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, PhoneCall, Code, ArrowUpRight } from 'lucide-react';
 import { Github, Linkedin } from './BrandIcons';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import profilPhoto from '../assets/Profil photo.jpeg';
 
 const roles = ['Développeur Informatique', 'Développeur Full-Stack', 'Passionné d\'Algorithmes'];
@@ -15,41 +15,21 @@ const fadeUp = (delay: number) => ({
 
 export default function Hero() {
   const [roleIndex, setRoleIndex] = useState(0);
-  const [currentText, setCurrentText] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [typingSpeed, setTypingSpeed] = useState(150);
 
   useEffect(() => {
-    const handleType = () => {
-      const fullText = roles[roleIndex];
-      if (!isDeleting) {
-        setCurrentText(fullText.substring(0, currentText.length + 1));
-        setTypingSpeed(100);
-        if (currentText === fullText) {
-          setTypingSpeed(2200);
-          setIsDeleting(true);
-        }
-      } else {
-        setCurrentText(fullText.substring(0, currentText.length - 1));
-        setTypingSpeed(50);
-        if (currentText === '') {
-          setIsDeleting(false);
-          setRoleIndex((prev) => (prev + 1) % roles.length);
-          setTypingSpeed(400);
-        }
-      }
-    };
-    const timer = setTimeout(handleType, typingSpeed);
-    return () => clearTimeout(timer);
-  }, [currentText, isDeleting, roleIndex, typingSpeed]);
+    const interval = setInterval(() => {
+      setRoleIndex((prev) => (prev + 1) % roles.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <section id="home" className="relative min-h-[95vh] flex items-center justify-center py-20 px-6 overflow-hidden">
+    <section id="home" className="relative min-h-[95vh] flex items-center justify-center py-20 px-4 sm:px-6 pb-28 md:pb-20 overflow-hidden">
       {/* Background glows */}
       <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-blue-600/10 blur-[80px] animate-pulse-light z-0" />
       <div className="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full bg-blue-500/8 blur-[100px] animate-pulse-light z-0" style={{ animationDelay: '2s' }} />
 
-      <div className="container relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-20 max-w-5xl w-full">
+      <div className="container relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-20 max-w-5xl w-full">
 
         {/* LEFT: Text content */}
         <div className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 min-w-0">
@@ -66,7 +46,7 @@ export default function Hero() {
           {/* Full Name */}
           <motion.h1
             {...fadeUp(0.1)}
-            className="text-7xl md:text-8xl lg:text-[6.5rem] tracking-wider mb-4 font-heading leading-[0.9]"
+            className="text-5xl md:text-6xl lg:text-7xl mb-4 font-heading leading-tight"
           >
             de-SOUZA
             <br />
@@ -75,17 +55,27 @@ export default function Hero() {
             </span>
           </motion.h1>
 
-          {/* Dynamic Typing Subtitle */}
-          <motion.h2
+          {/* Slot-machine role subtitle */}
+          <motion.div
             {...fadeUp(0.2)}
-            className="text-lg md:text-2xl font-medium text-[var(--text-secondary)] font-body mb-6 min-h-[34px] flex items-center justify-center lg:justify-start"
+            className="text-base md:text-2xl font-medium text-[var(--text-secondary)] font-body mb-6 flex items-center justify-center lg:justify-start gap-2 overflow-hidden w-full"
           >
-            Je suis&nbsp;
-            <span className="font-semibold text-[var(--electric)]">
-              {currentText}
-            </span>
-            <span className="w-[2px] h-5 bg-[var(--electric)] ml-1 animate-blink" />
-          </motion.h2>
+            <span className="shrink-0">Je suis</span>
+            <div className="relative h-[1.4em] overflow-hidden flex-1 max-w-[300px]">
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={roleIndex}
+                  initial={{ opacity: 0, y: '100%' }}
+                  animate={{ opacity: 1, y: '0%' }}
+                  exit={{ opacity: 0, y: '-100%' }}
+                  transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="absolute inset-0 font-semibold text-[var(--electric)] whitespace-nowrap"
+                >
+                  {roles[roleIndex]}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+          </motion.div>
 
           {/* Brief description */}
           <motion.p
@@ -98,13 +88,13 @@ export default function Hero() {
           {/* CTA Buttons */}
           <motion.div
             {...fadeUp(0.4)}
-            className="flex flex-col sm:flex-row gap-4 mb-10 w-full sm:w-auto"
+            className="flex flex-col sm:flex-row gap-3 mb-8 w-full sm:w-auto"
           >
             <motion.a
               href="#projects"
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
-              className="flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl font-body font-semibold text-base transition-all duration-300 text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:shadow-xl hover:shadow-blue-600/30"
+              className="flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl font-body font-semibold text-sm md:text-base transition-all duration-300 text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:shadow-xl hover:shadow-blue-600/30"
             >
               Explorer mon travail
               <ArrowRight size={18} />
@@ -113,7 +103,7 @@ export default function Hero() {
               href="tel:+2290156100070"
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
-              className="flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl font-body font-semibold text-base transition-all duration-300 border border-[var(--border-color)] bg-[var(--bg-card)] hover:border-blue-500/40 hover:text-[var(--electric)]"
+              className="flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl font-body font-semibold text-sm md:text-base transition-all duration-300 border border-[var(--border-color)] bg-[var(--bg-card)] hover:border-blue-500/40 hover:text-[var(--electric)]"
             >
               <PhoneCall size={18} className="text-[var(--electric)]" />
               Me contacter
@@ -160,14 +150,14 @@ export default function Hero() {
           initial={{ opacity: 0, x: 40, scale: 0.95 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1], delay: 0.2 }}
-          className="relative flex-shrink-0  lg:block"
+          className="relative flex-shrink-0 lg:block"
         >
           {/* Glow derrière la photo */}
           <div className="absolute inset-[-24px] rounded-[60px] bg-gradient-to-br from-blue-500/45 to-blue-800/25 blur-[70px]" />
 
           {/* Cadre glass translucide */}
           <div className="relative p-[6px] rounded-[44px] bg-gradient-to-br from-white/20 via-blue-400/20 to-blue-700/15 border border-white/25 shadow-2xl shadow-blue-700/30 backdrop-blur-sm">
-            <div className="rounded-[38px] overflow-hidden w-[350px] h-[400px] relative">
+            <div className="rounded-[38px] overflow-hidden w-[260px] h-[300px] sm:w-[310px] sm:h-[360px] lg:w-[350px] lg:h-[400px] relative">
               <img
                 src={profilPhoto}
                 alt="de-SOUZA Jeanpaul"

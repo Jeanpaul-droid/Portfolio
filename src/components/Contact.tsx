@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Send, CheckCircle, AlertCircle, Phone, Mail, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { slideLeft, slideRight, fadeUpVariants, inViewProps } from '../utils/animations';
+import { Github, Linkedin } from './BrandIcons';
 
 interface FormState {
   name: string;
@@ -42,7 +43,7 @@ const contactInfo = [
 ];
 
 const inputBase =
-  'w-full px-4 py-4 rounded-2xl bg-[var(--bg-app)] border text-base text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none transition-all duration-200 font-body font-light';
+  'w-full px-4 py-4 rounded-2xl bg-[var(--bg-app)] border text-base text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 font-body font-light';
 
 export default function Contact() {
   const [form, setForm] = useState<FormState>({ name: '', email: '', subject: '', message: '' });
@@ -127,34 +128,63 @@ export default function Contact() {
             variants={slideLeft}
             className="md:col-span-5"
           >
-            <div className="p-8 rounded-2xl glass-effect border border-[var(--border-color)] flex flex-col gap-7">
+            <div className="p-8 rounded-2xl glass-effect border border-[var(--border-color)] flex flex-col gap-7 text-left">
               <h3 className="text-xl font-bold font-heading text-[var(--text-primary)]">Mes coordonnées</h3>
 
-              {contactInfo.map((info, idx) => {
-                const content = (
-                  <motion.div
-                    key={idx}
-                    whileHover={info.href ? { x: 4 } : {}}
-                    className={`flex items-start gap-5 group ${info.href ? 'cursor-pointer' : ''}`}
-                  >
-                    <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex-shrink-0 flex items-center justify-center text-[var(--electric)] group-hover:bg-[var(--electric)] group-hover:text-white transition-all duration-300 shadow-sm">
-                      {info.icon}
-                    </div>
-                    <div className="flex flex-col gap-1 min-w-0">
-                      <span className="text-xs text-[var(--text-muted)] font-medium font-body uppercase tracking-wide">{info.label}</span>
-                      <span className={`text-sm font-semibold text-[var(--text-primary)] break-all leading-snug ${info.mono ? 'font-mono' : 'font-body'}`}>
-                        {info.value}
-                      </span>
-                    </div>
-                  </motion.div>
-                );
+              <div className="flex flex-col gap-6">
+                {contactInfo.map((info, idx) => {
+                  const content = (
+                    <motion.div
+                      whileHover={info.href ? { x: 4 } : {}}
+                      className={`flex items-start gap-5 group ${info.href ? 'cursor-pointer' : ''}`}
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex-shrink-0 flex items-center justify-center text-[var(--electric)] group-hover:bg-[var(--electric)] group-hover:text-white transition-all duration-300 shadow-sm">
+                        {info.icon}
+                      </div>
+                      <div className="flex flex-col gap-1 min-w-0">
+                        <span className="text-xs text-[var(--text-muted)] font-medium font-body uppercase tracking-wide">{info.label}</span>
+                        <span className={`text-sm font-semibold text-[var(--text-primary)] break-all leading-snug ${info.mono ? 'font-mono' : 'font-body'}`}>
+                          {info.value}
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
 
-                return info.href ? (
-                  <a key={idx} href={info.href}>{content}</a>
-                ) : (
-                  <div key={idx}>{content}</div>
-                );
-              })}
+                  return info.href ? (
+                    <a key={idx} href={info.href}>{content}</a>
+                  ) : (
+                    <div key={idx}>{content}</div>
+                  );
+                })}
+              </div>
+
+              {/* Social actions */}
+              <div className="border-t border-[var(--border-color)] pt-6 mt-2 flex items-center justify-center gap-3">
+                <motion.a
+                  href="https://github.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.08, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--electric)] hover:border-blue-500/40 transition-all duration-200 font-body text-sm font-medium"
+                  aria-label="GitHub"
+                >
+                  <Github size={18} />
+                  GitHub
+                </motion.a>
+                <motion.a
+                  href="https://linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.08, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--electric)] hover:border-blue-500/40 transition-all duration-200 font-body text-sm font-medium"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin size={18} />
+                  LinkedIn
+                </motion.a>
+              </div>
             </div>
           </motion.div>
 
@@ -170,6 +200,7 @@ export default function Contact() {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
                   className={`p-4 rounded-2xl flex items-start gap-3 border text-sm font-body font-medium ${status === 'success'
                       ? 'bg-blue-500/10 border-blue-500/20 text-blue-400'
                       : 'bg-red-500/10 border-red-500/20 text-red-400'
@@ -183,28 +214,28 @@ export default function Contact() {
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">Votre Nom</label>
                 <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Jean Dupont"
-                  className={`${inputBase} focus:border-blue-500 ${errors.name ? 'border-red-500' : 'border-[var(--border-color)]'}`} />
+                  className={`${inputBase} ${errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-[var(--border-color)] hover:border-blue-500/20'}`} />
                 {errors.name && <span className="text-xs text-red-400 font-medium font-body">{errors.name}</span>}
               </div>
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">Votre Email</label>
                 <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="nom@exemple.com"
-                  className={`${inputBase} focus:border-blue-500 ${errors.email ? 'border-red-500' : 'border-[var(--border-color)]'}`} />
+                  className={`${inputBase} ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-[var(--border-color)] hover:border-blue-500/20'}`} />
                 {errors.email && <span className="text-xs text-red-400 font-medium font-body">{errors.email}</span>}
               </div>
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">Sujet</label>
                 <input type="text" name="subject" value={form.subject} onChange={handleChange} placeholder="Proposition de projet / Collaboration"
-                  className={`${inputBase} focus:border-blue-500 ${errors.subject ? 'border-red-500' : 'border-[var(--border-color)]'}`} />
+                  className={`${inputBase} ${errors.subject ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-[var(--border-color)] hover:border-blue-500/20'}`} />
                 {errors.subject && <span className="text-xs text-red-400 font-medium font-body">{errors.subject}</span>}
               </div>
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">Message</label>
                 <textarea name="message" value={form.message} onChange={handleChange} placeholder="Dites-moi tout sur votre projet..." rows={5}
-                  className={`${inputBase} resize-none focus:border-blue-500 ${errors.message ? 'border-red-500' : 'border-[var(--border-color)]'}`} />
+                  className={`${inputBase} resize-none ${errors.message ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-[var(--border-color)] hover:border-blue-500/20'}`} />
                 {errors.message && <span className="text-xs text-red-400 font-medium font-body">{errors.message}</span>}
               </div>
 
