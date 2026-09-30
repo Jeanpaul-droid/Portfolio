@@ -94,7 +94,7 @@ export default function Hero() {
       <div className="container relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-20 max-w-5xl w-full">
 
         {/* LEFT: Text content */}
-        <div className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 min-w-0">
+        <div             className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 min-w-0 lg:min-w-[26rem]">
 
           {/* Badge */}
           <div
@@ -211,13 +211,13 @@ export default function Hero() {
           ref={portraitRef}
           data-hero="portrait"
           style={{ zIndex: 5 }}
-          className="pointer-events-none select-none z-[5] relative flex justify-center items-end w-full max-w-[90%] mx-auto mt-8 -mb-28 md:-mb-20 lg:mt-0 lg:w-auto lg:max-w-none lg:self-end"
+          className="pointer-events-none select-none z-[5] relative flex justify-center items-end w-full max-w-[90%] mx-auto mt-8 -mb-28 md:-mb-20 lg:mt-0 lg:w-auto lg:max-w-none lg:shrink-0 lg:self-end"
         >
           <img
             ref={portraitImgRef}
             src={moiDetoure}
             alt="de-SOUZA Jeanpaul"
-            className="h-full w-auto max-h-[50vh] sm:max-h-[60vh] lg:max-h-[65vh] object-contain object-bottom pointer-events-none select-none"
+            className="h-full w-auto max-h-[50vh] sm:max-h-[60vh] lg:max-h-none object-contain object-bottom pointer-events-none select-none"
           />
         </div>
       </div>
