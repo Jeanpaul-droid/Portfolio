@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Layout, Server, Settings, Cpu, Database, Code2, Zap, Sliders } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fadeUpVariants, inViewProps } from '../utils/animations';
+import { useLang } from '../context/LanguageContext';
+import { useSplitTitles } from '../hooks/useSplitTitles';
+import SectionBadge from './SectionBadge';
 
 interface Skill {
   name: string;
@@ -61,7 +64,10 @@ const SkillIcon = ({ name, className = "w-8 h-8" }: { name: string; className?: 
 };
 
 export default function Skills() {
+  const { lang } = useLang();
   const [activeTab, setActiveTab] = useState<'frontend' | 'backend' | 'embedded' | 'tools'>('frontend');
+  const sectionRef = useRef<HTMLElement>(null);
+  useSplitTitles(sectionRef, [lang]);
 
   const frontendSkills: Skill[] = [
     { name: 'HTML' },
@@ -107,14 +113,14 @@ export default function Skills() {
   };
 
   const tabs = [
-    { id: 'frontend' as const, name: 'Front-End', icon: <Layout size={17} /> },
-    { id: 'backend' as const, name: 'Back-End & BDD', icon: <Server size={17} /> },
-    { id: 'embedded' as const, name: 'Électronique & IoT', icon: <Cpu size={17} /> },
-    { id: 'tools' as const, name: 'Outils', icon: <Settings size={17} /> },
+    { id: 'frontend' as const, nameEN: 'Front-End', nameFR: 'Front-End', icon: <Layout size={17} /> },
+    { id: 'backend' as const, nameEN: 'Back-End & Databases', nameFR: 'Back-End & BDD', icon: <Server size={17} /> },
+    { id: 'embedded' as const, nameEN: 'Electronics & IoT', nameFR: 'Électronique & IoT', icon: <Cpu size={17} /> },
+    { id: 'tools' as const, nameEN: 'Tools', nameFR: 'Outils', icon: <Settings size={17} /> },
   ];
 
   return (
-    <section id="skills" className="py-24 px-6 relative">
+    <section ref={sectionRef} id="skills" className="py-24 px-6 relative">
       <div className="container max-w-5xl mx-auto">
 
         {/* Section Header */}
@@ -123,12 +129,19 @@ export default function Skills() {
           variants={fadeUpVariants}
           className="flex flex-col items-center mb-14"
         >
-          <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4 text-center">
-            Mes <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Compétences</span>
+          <SectionBadge index="02" labelEN="Skills" labelFR="Compétences" color="violet" />
+          <h2 data-split-title className="text-4xl md:text-5xl font-medium font-heading mb-4 text-center">
+            {lang === 'en' ? (
+              <>My <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Skills</span></>
+            ) : (
+              <>Mes <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Compétences</span></>
+            )}
           </h2>
           <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-blue-700 rounded-full mb-4" />
           <p className="text-center text-[var(--text-muted)] max-w-xl font-light font-body">
-            Une vue détaillée des technologies logicielles et matérielles que je maîtrise au quotidien.
+            {lang === 'en'
+              ? 'A detailed view of the software and hardware technologies I use every day.'
+              : 'Une vue détaillée des technologies logicielles et matérielles que je maîtrise au quotidien.'}
           </p>
         </motion.div>
 
@@ -151,7 +164,7 @@ export default function Skills() {
               }`}
             >
               {tab.icon}
-              {tab.name}
+              {lang === 'en' ? tab.nameEN : tab.nameFR}
             </motion.button>
           ))}
         </motion.div>

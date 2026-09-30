@@ -1,6 +1,8 @@
-import { Home, User, Cpu, FolderGit2, Mail, Sun, Moon } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Home, User, FolderGit2, Mail, Sun, Moon } from 'lucide-react';
+import { NavLink } from 'react-router';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLang } from '../context/LanguageContext';
+import LanguageSwitch from './LanguageSwitch';
 
 interface NavbarProps {
   theme: 'light' | 'dark';
@@ -8,33 +10,14 @@ interface NavbarProps {
 }
 
 const navItems = [
-  { id: 'home', name: 'Accueil', icon: Home, href: '#home' },
-  { id: 'about', name: 'À propos', icon: User, href: '#about' },
-  { id: 'skills', name: 'Compétences', icon: Cpu, href: '#skills' },
-  { id: 'projects', name: 'Projets', icon: FolderGit2, href: '#projects' },
-  { id: 'contact', name: 'Contact', icon: Mail, href: '#contact' },
+  { id: 'home', nameEN: 'Home', nameFR: 'Accueil', icon: Home, to: '/' },
+  { id: 'about', nameEN: 'About', nameFR: 'À propos', icon: User, to: '/about' },
+  { id: 'projects', nameEN: 'Projects', nameFR: 'Projets', icon: FolderGit2, to: '/projects' },
+  { id: 'contact', nameEN: 'Contact', nameFR: 'Contact', icon: Mail, to: '/contact' },
 ];
 
 export default function Navbar({ theme, setTheme }: NavbarProps) {
-  const [activeSection, setActiveSection] = useState('home');
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = navItems.map(item => document.getElementById(item.id));
-      const scrollPosition = window.scrollY + window.innerHeight / 3;
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = sections[i];
-        if (section && scrollPosition >= section.offsetTop) {
-          setActiveSection(navItems[i].id);
-          break;
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const { lang } = useLang();
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -54,50 +37,60 @@ export default function Navbar({ theme, setTheme }: NavbarProps) {
       >
         {navItems.map((item, index) => {
           const Icon = item.icon;
-          const isActive = activeSection === item.id;
+          const itemName = lang === 'en' ? item.nameEN : item.nameFR;
           return (
-            <motion.a
+            <motion.span
               key={item.id}
-              href={item.href}
               initial={{ x: -30, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.1 + index * 0.07, duration: 0.4 }}
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.92 }}
               className="group relative flex items-center justify-center"
-              aria-label={item.name}
             >
-              {/* Active indicator glow */}
-              {isActive && (
-                <motion.div
-                  layoutId="nav-glow"
-                  className="absolute inset-0 rounded-xl bg-[var(--electric)] opacity-20 blur-md"
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                />
-              )}
-              <div
-                className={`relative w-11 h-11 flex items-center justify-center rounded-xl transition-colors duration-200 ${
-                  isActive
-                    ? 'text-[var(--electric)]'
-                    : 'text-[var(--text-muted)] hover:text-[var(--electric)]'
-                }`}
+              <NavLink
+                to={item.to}
+                aria-label={itemName}
+                className="relative flex items-center justify-center"
               >
-                <Icon size={26} strokeWidth={isActive ? 2.2 : 1.7} />
-              </div>
+                {({ isActive }) => (
+                  <>
+                    {/* Active indicator glow */}
+                    {isActive && (
+                      <motion.span
+                        layoutId="nav-glow"
+                        className="absolute inset-0 rounded-xl bg-[var(--electric)] opacity-20 blur-md"
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                      />
+                    )}
+                    <span
+                      className={`relative w-11 h-11 flex items-center justify-center rounded-xl transition-colors duration-200 ${isActive
+                          ? 'text-[var(--electric)]'
+                          : 'text-[var(--text-muted)] hover:text-[var(--electric)]'
+                        }`}
+                    >
+                      <Icon size={26} strokeWidth={isActive ? 2.2 : 1.7} />
+                    </span>
 
-              {/* Tooltip */}
-              <div className="absolute left-14 pointer-events-none">
-                <div className="relative px-3 py-1.5 rounded-lg bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs font-body font-medium whitespace-nowrap opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 shadow-lg border border-white/10">
-                  {item.name}
-                  <div className="absolute left-0 top-1/2 -translate-x-1.5 -translate-y-1/2 w-2 h-2 rotate-45 bg-gray-900/90 dark:bg-gray-800/90 border-l border-b border-white/10" />
-                </div>
-              </div>
-            </motion.a>
+                    {/* Tooltip */}
+                    <span className="absolute left-14 pointer-events-none">
+                      <span className="relative px-3 py-1.5 rounded-lg bg-gray-900/90 dark:bg-gray-800/90 text-white text-xs font-body font-medium whitespace-nowrap opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 shadow-lg border border-white/10 flex">
+                        {itemName}
+                        <span className="absolute left-0 top-1/2 -translate-x-1.5 -translate-y-1/2 w-2 h-2 rotate-45 bg-gray-900/90 dark:bg-gray-800/90 border-l border-b border-white/10" />
+                      </span>
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            </motion.span>
           );
         })}
 
         {/* Divider */}
         <div className="w-[2px] h-6 rounded-full bg-[var(--border-color)]" />
+
+        {/* Language Switch (global EN/FR) */}
+        <LanguageSwitch orientation="vertical" />
 
         {/* Theme Toggle */}
         <motion.button
@@ -108,7 +101,7 @@ export default function Navbar({ theme, setTheme }: NavbarProps) {
           whileTap={{ scale: 0.92 }}
           onClick={toggleTheme}
           className="flex items-center justify-center w-11 h-11 rounded-xl text-[var(--text-muted)] hover:text-[var(--electric)] transition-colors duration-200"
-          aria-label="Changer de thème"
+          aria-label={lang === 'en' ? 'Toggle theme' : 'Changer de thème'}
         >
           <AnimatePresence mode="wait">
             {theme === 'light' ? (
@@ -124,39 +117,52 @@ export default function Navbar({ theme, setTheme }: NavbarProps) {
         </motion.button>
       </motion.nav>
 
-      {/* Bottom Floating Navigation (Mobile) */}
+      {/* Bottom Floating Navigation (Mobile) — round pill dock */}
       <motion.nav
         initial={{ y: 60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: 'easeOut', delay: 0.2 }}
-        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 md:hidden flex items-center justify-between gap-1 px-3 py-2 rounded-2xl glass-effect border border-[var(--border-color)] shadow-xl w-auto"
+        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 md:hidden flex items-center justify-between gap-1 px-2 py-1.5 rounded-full glass-effect border border-[var(--border-color)] shadow-xl w-auto transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300"
       >
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeSection === item.id;
+          const itemName = lang === 'en' ? item.nameEN : item.nameFR;
           return (
-            <a
+            <NavLink
               key={item.id}
-              href={item.href}
-              className={`relative flex items-center justify-center w-12 h-12 rounded-xl transition-colors duration-200 ${
-                isActive
-                  ? 'text-[var(--electric)]'
-                  : 'text-[var(--text-muted)] hover:text-[var(--electric)]'
-              }`}
-              aria-label={item.name}
+              to={item.to}
+              aria-label={itemName}
+              className={({ isActive }) =>
+                `relative flex items-center justify-center w-12 h-12 rounded-full transition-colors duration-200 ${isActive
+                    ? 'text-[var(--electric)]'
+                    : 'text-[var(--text-muted)] hover:text-[var(--electric)]'
+                  }`
+              }
             >
-              {isActive && (
-                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--electric)]" />
+              {({ isActive }) => (
+                <>
+                  {/* Soft active pill — glides between links */}
+                  {isActive && (
+                    <motion.span
+                      layoutId="mobile-nav-pill"
+                      className="absolute inset-0 rounded-full bg-[var(--electric)]/10 shadow-sm shadow-blue-600/10 ring-1 ring-blue-500/20"
+                      transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative">
+                    <Icon size={24} strokeWidth={isActive ? 2.2 : 1.7} />
+                  </span>
+                </>
               )}
-              <Icon size={24} strokeWidth={isActive ? 2.2 : 1.7} />
-            </a>
+            </NavLink>
           );
         })}
+        <LanguageSwitch orientation="horizontal" />
         <div className="w-[1px] h-6 bg-[var(--border-color)]" />
         <button
           onClick={toggleTheme}
-          className="flex items-center justify-center w-12 h-12 rounded-xl text-[var(--text-muted)] hover:text-[var(--electric)] transition-colors duration-200"
-          aria-label="Changer de thème"
+          className="flex items-center justify-center w-12 h-12 rounded-full text-[var(--text-muted)] hover:text-[var(--electric)] transition-colors duration-200"
+          aria-label={lang === 'en' ? 'Toggle theme' : 'Changer de thème'}
         >
           {theme === 'light' ? <Moon size={22} strokeWidth={1.7} /> : <Sun size={22} strokeWidth={1.7} />}
         </button>

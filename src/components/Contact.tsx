@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Send, CheckCircle, AlertCircle, Phone, Mail, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { slideLeft, slideRight, fadeUpVariants, inViewProps } from '../utils/animations';
 import { Github, Linkedin } from './BrandIcons';
+import { useLang } from '../context/LanguageContext';
+import { useSplitTitles } from '../hooks/useSplitTitles';
+import SectionBadge from './SectionBadge';
 
 interface FormState {
   name: string;
@@ -21,21 +24,24 @@ interface FormErrors {
 const contactInfo = [
   {
     icon: <Phone size={18} />,
-    label: 'Téléphone (Appel direct)',
+    labelEN: 'Phone (Direct call)',
+    labelFR: 'Téléphone (Appel direct)',
     value: '+229 0156100070',
     href: 'tel:+2290156100070',
     mono: true,
   },
   {
     icon: <Mail size={18} />,
-    label: 'Email professionnel',
+    labelEN: 'Professional email',
+    labelFR: 'Email professionnel',
     value: 'amirjeanpaul9@gmail.com',
     href: 'mailto:amirjeanpaul9@gmail.com',
     mono: true,
   },
   {
     icon: <MapPin size={18} />,
-    label: 'Localisation',
+    labelEN: 'Location',
+    labelFR: 'Localisation',
     value: 'Cotonou, Bénin',
     href: null,
     mono: false,
@@ -46,6 +52,9 @@ const inputBase =
   'w-full px-4 py-4 rounded-2xl bg-[var(--bg-app)] border text-base text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300 font-body font-light';
 
 export default function Contact() {
+  const { lang } = useLang();
+  const sectionRef = useRef<HTMLElement>(null);
+  useSplitTitles(sectionRef, [lang]);
   const [form, setForm] = useState<FormState>({ name: '', email: '', subject: '', message: '' });
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
@@ -63,46 +72,50 @@ export default function Contact() {
   const validate = (): boolean => {
     const tempErrors: FormErrors = {};
     let isValid = true;
-    if (!form.name.trim()) { tempErrors.name = 'Veuillez saisir votre nom.'; isValid = false; }
-    if (!form.email.trim()) { tempErrors.email = 'Veuillez saisir votre adresse email.'; isValid = false; }
-    else if (!/\S+@\S+\.\S+/.test(form.email)) { tempErrors.email = 'L\'adresse email saisie est invalide.'; isValid = false; }
-    if (!form.subject.trim()) { tempErrors.subject = 'Veuillez saisir le sujet du message.'; isValid = false; }
-    if (!form.message.trim()) { tempErrors.message = 'Le message ne peut pas être vide.'; isValid = false; }
+    if (!form.name.trim()) { tempErrors.name = lang === 'en' ? 'Please enter your name.' : 'Veuillez saisir votre nom.'; isValid = false; }
+    if (!form.email.trim()) { tempErrors.email = lang === 'en' ? 'Please enter your email address.' : 'Veuillez saisir votre adresse email.'; isValid = false; }
+    else if (!/\S+@\S+\.\S+/.test(form.email)) { tempErrors.email = lang === 'en' ? 'The email address entered is invalid.' : 'L\'adresse email saisie est invalide.'; isValid = false; }
+    if (!form.subject.trim()) { tempErrors.subject = lang === 'en' ? 'Please enter the message subject.' : 'Veuillez saisir le sujet du message.'; isValid = false; }
+    if (!form.message.trim()) { tempErrors.message = lang === 'en' ? 'The message cannot be empty.' : 'Le message ne peut pas être vide.'; isValid = false; }
     setErrors(tempErrors);
     return isValid;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const WHATSAPP_NUMBER = '2290156100070';
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStatus(null);
     setStatusMessage('');
     if (!validate()) return;
     setLoading(true);
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      });
-      const result = await response.json();
-      if (response.ok && result.success) {
-        setStatus('success');
-        setStatusMessage(result.message || 'Votre message a été enregistré avec succès !');
-        setForm({ name: '', email: '', subject: '', message: '' });
-      } else {
-        throw new Error(result.error || 'Une erreur est survenue lors de l\'enregistrement.');
-      }
-    } catch (err: unknown) {
+      const header =
+        lang === 'en'
+          ? 'Hello Jeanpaul, new message from your portfolio:'
+          : 'Bonjour Jeanpaul, nouveau message depuis ton portfolio :';
+      const text = `${header}\n\n${lang === 'en' ? 'Name' : 'Nom'}: ${form.name.trim()}\nEmail: ${form.email.trim()}\n${lang === 'en' ? 'Subject' : 'Sujet'}: ${form.subject.trim()}\n\n${lang === 'en' ? 'Message' : 'Message'}:\n${form.message.trim()}`;
+      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+      setStatus('success');
+      setStatusMessage(
+        lang === 'en'
+          ? 'Opening WhatsApp with your message — just press send!'
+          : 'Ouverture de WhatsApp avec ton message — il ne reste qu’à l’envoyer !'
+      );
+      setForm({ name: '', email: '', subject: '', message: '' });
+    } catch {
       setStatus('error');
-      const errorMessage = err instanceof Error ? err.message : 'Impossible d\'envoyer le message. Veuillez réessayer.';
-      setStatusMessage(errorMessage);
+      setStatusMessage(
+        lang === 'en' ? 'Unable to open WhatsApp. Please try again.' : 'Impossible d’ouvrir WhatsApp. Veuillez réessayer.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section id="contact" className="py-24 px-6 relative">
+    <section ref={sectionRef} id="contact" className="py-24 px-6 relative">
       <div className="container max-w-4xl mx-auto">
 
         {/* Section Title */}
@@ -111,12 +124,19 @@ export default function Contact() {
           variants={fadeUpVariants}
           className="flex flex-col items-center mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4 text-center">
-            Me <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Contacter</span>
+          <SectionBadge index="05" labelEN="Contact" labelFR="Contact" color="rose" />
+          <h2 data-split-title className="text-4xl md:text-5xl font-medium font-heading mb-4 text-center">
+            {lang === 'en' ? (
+              <>Contact <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Me</span></>
+            ) : (
+              <>Me <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Contacter</span></>
+            )}
           </h2>
           <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-blue-700 rounded-full mb-4" />
           <p className="text-center text-[var(--text-muted)] max-w-lg font-light font-body">
-            Vous avez un projet ou une opportunité de développement ? Laissez-moi un message.
+            {lang === 'en'
+              ? 'Have a project or a development opportunity? Send me a message.'
+              : 'Vous avez un projet ou une opportunité de développement ? Laissez-moi un message.'}
           </p>
         </motion.div>
 
@@ -129,7 +149,7 @@ export default function Contact() {
             className="md:col-span-5"
           >
             <div className="p-8 rounded-2xl glass-effect border border-[var(--border-color)] flex flex-col gap-7 text-left">
-              <h3 className="text-xl font-bold font-heading text-[var(--text-primary)]">Mes coordonnées</h3>
+              <h3 className="text-2xl font-semibold font-heading text-[var(--text-primary)]">{lang === 'en' ? 'My contact details' : 'Mes coordonnées'}</h3>
 
               <div className="flex flex-col gap-6">
                 {contactInfo.map((info, idx) => {
@@ -142,7 +162,7 @@ export default function Contact() {
                         {info.icon}
                       </div>
                       <div className="flex flex-col gap-1 min-w-0">
-                        <span className="text-xs text-[var(--text-muted)] font-medium font-body uppercase tracking-wide">{info.label}</span>
+                        <span className="text-xs text-[var(--text-muted)] font-medium font-body uppercase tracking-wide">{lang === 'en' ? info.labelEN : info.labelFR}</span>
                         <span className={`text-sm font-semibold text-[var(--text-primary)] break-all leading-snug ${info.mono ? 'font-mono' : 'font-body'}`}>
                           {info.value}
                         </span>
@@ -161,7 +181,7 @@ export default function Contact() {
               {/* Social actions */}
               <div className="border-t border-[var(--border-color)] pt-6 mt-2 flex items-center justify-center gap-3">
                 <motion.a
-                  href="https://github.com"
+                  href="https://github.com/Jeanpaul-droid"
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.08, y: -2 }}
@@ -202,8 +222,8 @@ export default function Contact() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
                   className={`p-4 rounded-2xl flex items-start gap-3 border text-sm font-body font-medium ${status === 'success'
-                      ? 'bg-blue-500/10 border-blue-500/20 text-blue-400'
-                      : 'bg-red-500/10 border-red-500/20 text-red-400'
+                    ? 'bg-blue-500/10 border-blue-500/20 text-blue-400'
+                    : 'bg-red-500/10 border-red-500/20 text-red-400'
                     }`}
                 >
                   {status === 'success' ? <CheckCircle size={20} className="shrink-0" /> : <AlertCircle size={20} className="shrink-0" />}
@@ -212,29 +232,29 @@ export default function Contact() {
               )}
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">Votre Nom</label>
-                <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Jean Dupont"
+                <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">{lang === 'en' ? 'Your Name' : 'Votre Nom'}</label>
+                <input type="text" name="name" value={form.name} onChange={handleChange} placeholder={lang === 'en' ? 'John Doe' : 'Jean Dupont'}
                   className={`${inputBase} ${errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-[var(--border-color)] hover:border-blue-500/20'}`} />
                 {errors.name && <span className="text-xs text-red-400 font-medium font-body">{errors.name}</span>}
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">Votre Email</label>
-                <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="nom@exemple.com"
+                <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">{lang === 'en' ? 'Your Email' : 'Votre Email'}</label>
+                <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="name@example.com"
                   className={`${inputBase} ${errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-[var(--border-color)] hover:border-blue-500/20'}`} />
                 {errors.email && <span className="text-xs text-red-400 font-medium font-body">{errors.email}</span>}
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">Sujet</label>
-                <input type="text" name="subject" value={form.subject} onChange={handleChange} placeholder="Proposition de projet / Collaboration"
+                <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">{lang === 'en' ? 'Subject' : 'Sujet'}</label>
+                <input type="text" name="subject" value={form.subject} onChange={handleChange} placeholder={lang === 'en' ? 'Project proposal / Collaboration' : 'Proposition de projet / Collaboration'}
                   className={`${inputBase} ${errors.subject ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-[var(--border-color)] hover:border-blue-500/20'}`} />
                 {errors.subject && <span className="text-xs text-red-400 font-medium font-body">{errors.subject}</span>}
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">Message</label>
-                <textarea name="message" value={form.message} onChange={handleChange} placeholder="Dites-moi tout sur votre projet..." rows={5}
+                <label className="text-sm font-semibold text-[var(--text-secondary)] font-body">{lang === 'en' ? 'Message' : 'Message'}</label>
+                <textarea name="message" value={form.message} onChange={handleChange} placeholder={lang === 'en' ? 'Tell me everything about your project...' : 'Dites-moi tout sur votre projet...'} rows={5}
                   className={`${inputBase} resize-none ${errors.message ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-[var(--border-color)] hover:border-blue-500/20'}`} />
                 {errors.message && <span className="text-xs text-red-400 font-medium font-body">{errors.message}</span>}
               </div>
@@ -249,7 +269,7 @@ export default function Contact() {
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <>Envoyer le message <Send size={16} /></>
+                  <>{lang === 'en' ? 'Send message' : 'Envoyer le message'} <Send size={16} /></>
                 )}
               </motion.button>
             </form>

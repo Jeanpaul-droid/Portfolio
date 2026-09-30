@@ -43,6 +43,20 @@ export const staggerItem: Variants = {
   },
 };
 
+/** Variants container avec stagger horizontal (gauche → droite) */
+export const staggerContainerX: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.4,
+      ease,
+      staggerChildren: 0.15,
+      delayChildren: 0.05,
+    } as Transition,
+  },
+};
+
 /** Variants scale popup */
 export const scaleUp: Variants = {
   hidden: { opacity: 0, scale: 0.9 },

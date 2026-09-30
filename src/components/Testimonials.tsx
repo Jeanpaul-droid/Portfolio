@@ -1,6 +1,10 @@
+import { useRef } from 'react';
 import { Quote } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { staggerContainer, staggerItem, inViewProps } from '../utils/animations';
+import { staggerContainer, staggerContainerX, staggerItem, slideLeft, inViewProps } from '../utils/animations';
+import { useLang } from '../context/LanguageContext';
+import { useSplitTitles } from '../hooks/useSplitTitles';
+import SectionBadge from './SectionBadge';
 
 interface Testimonial {
   id: number;
@@ -12,6 +16,10 @@ interface Testimonial {
 }
 
 export default function Testimonials() {
+  const { lang } = useLang();
+  const sectionRef = useRef<HTMLElement>(null);
+  useSplitTitles(sectionRef, [lang]);
+  // NOTE: testimonial quotes are kept verbatim (their authors' own words) and are not translated.
   const testimonialsData: Testimonial[] = [
     {
       id: 1,
@@ -40,7 +48,7 @@ export default function Testimonials() {
   ];
 
   return (
-    <section id="testimonials" className="py-24 px-6 relative overflow-hidden">
+    <section ref={sectionRef} id="testimonials" className="py-24 px-6 relative overflow-hidden">
       {/* Background glow decorator */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-blue-600/5 blur-[120px] pointer-events-none z-0" />
 
@@ -52,25 +60,32 @@ export default function Testimonials() {
           variants={staggerContainer}
           className="flex flex-col items-center mb-16"
         >
-          <motion.h2 variants={staggerItem} className="text-3xl md:text-4xl font-bold font-heading mb-4 text-center">
-            Recommandations & <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Témoignages</span>
-          </motion.h2>
+          <SectionBadge index="04" labelEN="Testimonials" labelFR="Témoignages" color="amber" />
+          <h2 data-split-title className="text-4xl md:text-5xl font-medium font-heading mb-4 text-center">
+            {lang === 'en' ? (
+              <>Recommendations & <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Testimonials</span></>
+            ) : (
+              <>Recommandations & <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Témoignages</span></>
+            )}
+          </h2>
           <motion.div variants={staggerItem} className="w-16 h-1 bg-gradient-to-r from-blue-500 to-blue-700 rounded-full mb-4" />
           <motion.p variants={staggerItem} className="text-center text-[var(--text-muted)] max-w-xl font-light font-body">
-            Ce que mes mentors professionnels, enseignants universitaires et collaborateurs disent de mon travail et de ma rigueur technique.
+            {lang === 'en'
+              ? 'What my professional mentors, university teachers and collaborators say about my work and technical rigor.'
+              : 'Ce que mes mentors professionnels, enseignants universitaires et collaborateurs disent de mon travail et de ma rigueur technique.'}
           </motion.p>
         </motion.div>
 
-        {/* Testimonials Grid */}
+        {/* Testimonials Grid — entrance cascade left → right */}
         <motion.div
           {...inViewProps}
-          variants={staggerContainer}
+          variants={staggerContainerX}
           className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
           {testimonialsData.map((item) => (
             <motion.div
               key={item.id}
-              variants={staggerItem}
+              variants={slideLeft}
               whileHover={{ y: -6, scale: 1.02 }}
               className="group relative p-8 rounded-3xl glass-effect border border-[var(--border-color)] flex flex-col justify-between transition-all duration-300 hover:border-blue-500/20 hover:shadow-xl hover:shadow-blue-600/5"
             >
@@ -89,12 +104,12 @@ export default function Testimonials() {
               {/* Card Footer (Author) */}
               <div className="flex items-center gap-4 pt-4 border-t border-[var(--border-color)] mt-auto">
                 {/* Avatar */}
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-700/10 flex items-center justify-center border border-blue-500/10 text-[var(--electric)] font-heading font-bold text-sm select-none">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-700/10 flex items-center justify-center border border-blue-500/10 text-[var(--electric)] font-body font-bold text-sm select-none">
                   {item.avatarInitials}
                 </div>
                 {/* Info */}
                 <div className="flex flex-col text-left">
-                  <span className="text-sm font-bold text-[var(--text-primary)] font-heading">
+                  <span className="text-sm font-bold text-[var(--text-primary)] font-body">
                     {item.name}
                   </span>
                   <span className="text-[11px] font-medium text-[var(--text-muted)] font-body tracking-wider uppercase leading-none mt-1">

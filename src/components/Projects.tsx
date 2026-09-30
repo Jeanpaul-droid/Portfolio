@@ -1,22 +1,23 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ExternalLink, ArrowUpRight, X } from 'lucide-react';
 import { Github } from './BrandIcons';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fadeUpVariants, inViewProps } from '../utils/animations';
+import { fadeUpVariants, inViewProps, baseTransition } from '../utils/animations';
+import { useLang } from '../context/LanguageContext';
+import { useSplitTitles } from '../hooks/useSplitTitles';
+import SectionBadge from './SectionBadge';
+import TechBadges from './TechBadges';
+import { projectsData, projectCategoryColors } from '../data/projects';
+import type { Project } from '../data/projects';
 
-interface Project {
-  id: number;
-  title: string;
-  category: 'frontend' | 'backend' | 'fullstack';
-  description: string;
-  longDescription: string;
-  tech: string[];
-  features: string[];
-  githubUrl: string;
-  demoUrl: string;
-}
+const filterLabelsEN: Record<string, string> = {
+  all: 'All',
+  fullstack: 'Full-Stack',
+  frontend: 'Front-End',
+  backend: 'Back-End',
+};
 
-const filterLabels: Record<string, string> = {
+const filterLabelsFR: Record<string, string> = {
   all: 'Tous',
   fullstack: 'Full-Stack',
   frontend: 'Front-End',
@@ -31,91 +32,20 @@ function getInitials(title: string): string {
     .slice(0, 3);
 }
 
-const categoryColors: Record<string, string> = {
-  fullstack: 'from-blue-600/30 to-blue-800/20',
-  frontend: 'from-sky-600/30 to-blue-700/20',
-  backend: 'from-indigo-600/30 to-blue-800/20',
-};
-
 export default function Projects() {
+  const { lang } = useLang();
+  const sectionRef = useRef<HTMLElement>(null);
+  useSplitTitles(sectionRef, [lang]);
   const [filter, setFilter] = useState<'all' | 'frontend' | 'backend' | 'fullstack'>('all');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const filterLabels = lang === 'en' ? filterLabelsEN : filterLabelsFR;
 
-  // ==========================================
-  // CONFIGURATION DES PROJETS (AVEC DETAILS)
-  // ==========================================
-  const projectsData: Project[] = [
-    {
-      id: 1,
-      title: 'Supa-Commerce',
-      category: 'fullstack',
-      description: "Une plateforme e-commerce moderne intégrant la gestion des paniers, l'authentification sécurisée des utilisateurs et les paiements Stripe.",
-      longDescription: "Supa-Commerce est une application e-commerce complète conçue pour offrir une expérience d'achat rapide, fluide et sécurisée. Elle intègre un système d'authentification robuste avec gestion de sessions, une base de données relationnelle pour gérer les produits et commandes, et l'API Stripe pour la gestion des transactions financières.",
-      features: [
-        "Intégration complète et sécurisée des paiements Stripe",
-        "Système d'authentification utilisateur (JWT & cookies sécurisés)",
-        "Gestion d'état globale pour le panier d'achat",
-        "Panneau d'administration pour la gestion des stocks et produits"
-      ],
-      tech: ['React js', 'Next js', 'Postgresql', 'Express js'],
-      githubUrl: 'https://github.com/de-souza-jeanpaul/supa-commerce',
-      demoUrl: 'https://supa-commerce.demo.com',
-    },
-    {
-      id: 2,
-      title: 'Apex Task-Flow',
-      category: 'frontend',
-      description: "Un gestionnaire de tâches de style Kanban interactif avec gestion des états locaux et synchronisation Firebase pour le travail d'équipe.",
-      longDescription: "Apex Task-Flow simplifie la gestion de projets et de tâches pour les équipes. Inspiré des tableaux Kanban, il permet de réorganiser visuellement ses tâches par glisser-déposer (Drag and Drop). Les données sont synchronisées instantanément avec Firebase Firestore, ce qui permet à plusieurs collaborateurs de travailler en temps réel.",
-      features: [
-        "Tableau Kanban avec système intuitif de glisser-déposer",
-        "Synchronisation cloud en temps réel avec Firebase Firestore",
-        "Filtres de recherche et de priorité des tâches",
-        "Thème sombre natif et interface ultra-réactive"
-      ],
-      tech: ['React js', 'Firebase', 'CSS', 'HTML'],
-      githubUrl: 'https://github.com/de-souza-jeanpaul/apex-taskflow',
-      demoUrl: 'https://apex-taskflow.demo.com',
-    },
-    {
-      id: 3,
-      title: 'Edu-Manage API',
-      category: 'backend',
-      description: 'API REST robuste de gestion académique avec authentification OAuth2, gestion de rôles complexes et génération de rapports automatiques.',
-      longDescription: "Edu-Manage API est le moteur d'une plateforme scolaire. Elle permet de gérer les inscriptions, les cours, les notes et les présences. La sécurité est au cœur du système avec un contrôle d'accès basé sur les rôles (RBAC) et un mécanisme d'authentification OAuth2.",
-      features: [
-        "Authentification sécurisée avec OAuth2 & jetons d'accès",
-        "Contrôle d'accès strict selon les rôles (Admin, Prof, Élève)",
-        "Génération automatique de bulletins scolaires (PDF/CSV)",
-        "Endpoints documentés de manière interactive avec Swagger"
-      ],
-      tech: ['Express js', 'SQL', 'Postman', 'Node js'],
-      githubUrl: 'https://github.com/de-souza-jeanpaul/edu-manage-api',
-      demoUrl: 'https://edu-manage-api.demo.com',
-    },
-    {
-      id: 4,
-      title: 'Py-Data-Analyzer',
-      category: 'backend',
-      description: "Script Python complet permettant d'extraire, nettoyer et modéliser des volumes de données statistiques avec des graphiques interactifs.",
-      longDescription: "Py-Data-Analyzer est un outil d'ingénierie et d'analyse de données. Il se connecte à des bases de données relationnelles pour extraire des volumes d'informations, applique des scripts de nettoyage (handling des valeurs nulles, doublons) et calcule des modélisations statistiques représentées sous forme graphique.",
-      features: [
-        "Nettoyage automatique et standardisation des données",
-        "Analyses statistiques descriptives et prédictives",
-        "Visualisations interactives exportables",
-        "Connexion sécurisée aux bases de données SQL / PostgreSQL"
-      ],
-      tech: ['Python', 'SQL', 'Postgresql'],
-      githubUrl: 'https://github.com/de-souza-jeanpaul/py-data-analyzer',
-      demoUrl: 'https://py-data-analyzer.demo.com',
-    },
-  ];
-
+  // Project catalogue lives in src/data/projects.ts (shared with the Home teaser).
   const filteredProjects =
     filter === 'all' ? projectsData : projectsData.filter(p => p.category === filter);
 
   return (
-    <section id="projects" className="py-24 px-6 relative">
+    <section ref={sectionRef} id="projects" className="py-24 px-6 relative">
       <div className="container max-w-5xl mx-auto">
 
         {/* Section Title */}
@@ -124,12 +54,19 @@ export default function Projects() {
           variants={fadeUpVariants}
           className="flex flex-col items-center mb-14"
         >
-          <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4 text-center">
-            Mes <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Projets Réalisés</span>
+          <SectionBadge index="03" labelEN="Projects" labelFR="Projets" color="emerald" />
+          <h2 data-split-title className="text-4xl md:text-5xl font-medium font-heading mb-4 text-center">
+            {lang === 'en' ? (
+              <>My <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Completed Projects</span></>
+            ) : (
+              <>Mes <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">Projets Réalisés</span></>
+            )}
           </h2>
           <div className="w-16 h-1 bg-gradient-to-r from-blue-500 to-blue-700 rounded-full mb-4" />
           <p className="text-center text-[var(--text-muted)] max-w-xl font-light font-body">
-            Découvrez une sélection de mes travaux récents, incluant des architectures backend et des interfaces frontend modernes.
+            {lang === 'en'
+              ? 'Discover a selection of my recent work, including backend architectures and modern frontend interfaces.'
+              : 'Découvrez une sélection de mes travaux récents, incluant des architectures backend et des interfaces frontend modernes.'}
           </p>
         </motion.div>
 
@@ -166,13 +103,18 @@ export default function Projects() {
                 initial={{ opacity: 0, y: 30, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
+                whileHover={{ y: -6, transition: baseTransition(0.3) }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
                 onClick={() => setSelectedProject(project)}
-                className="group rounded-2xl glass-effect border border-[var(--border-color)] overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-600/10 hover:border-blue-500/20 flex flex-col cursor-pointer"
+                className="group rounded-3xl glass-effect border border-[var(--border-color)] overflow-hidden transition-[box-shadow,border-color] duration-300 hover:shadow-xl hover:shadow-blue-600/15 hover:border-blue-500/25 flex flex-col cursor-pointer"
               >
                 {/* Project Visual — initiales */}
-                <div className={`relative aspect-video overflow-hidden bg-gradient-to-br ${categoryColors[project.category]} flex items-center justify-center`}>
-                  <span className="text-5xl font-bold font-heading text-white/20 select-none tracking-widest">
+                <div className={`relative aspect-video overflow-hidden bg-gradient-to-br ${projectCategoryColors[project.category]} flex items-center justify-center`}>
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 bg-[radial-gradient(ellipse_65%_55%_at_50%_35%,rgba(255,255,255,0.18),transparent_70%)]"
+                  />
+                  <span className="text-6xl font-bold font-heading text-white/30 select-none tracking-[0.2em] transition-transform duration-500 group-hover:scale-110">
                     {getInitials(project.title)}
                   </span>
 
@@ -183,27 +125,42 @@ export default function Projects() {
                       whileTap={{ scale: 0.95 }}
                       className="flex items-center gap-2 px-5 py-3 bg-white text-gray-900 rounded-xl font-body text-sm font-bold shadow-lg hover:bg-blue-600 hover:text-white transition-all duration-200 cursor-pointer"
                     >
-                      Détails du projet
+                      {lang === 'en' ? 'Project details' : 'Détails du projet'}
                       <ArrowUpRight size={15} />
                     </motion.button>
                   </div>
+
+                  {/* GitHub quick link */}
+                  <a
+                    href={project.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label={`${project.title} — GitHub`}
+                    className="absolute top-4 right-4 p-2.5 rounded-xl bg-black/25 border border-white/10 text-white/80 backdrop-blur-md transition-all duration-300 hover:bg-blue-600 hover:text-white hover:-translate-y-0.5"
+                  >
+                    <Github size={16} />
+                  </a>
                 </div>
 
                 {/* Card Body */}
                 <div className="p-6 flex flex-col flex-grow text-left">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="px-3 py-1 rounded-full bg-blue-500/10 text-[var(--electric)] text-xs font-body font-semibold uppercase tracking-wide border border-blue-500/15">
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-[var(--electric)] text-[11px] font-body font-semibold uppercase tracking-wide border border-blue-500/15">
+                      <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current" />
                       {project.category}
                     </span>
+                    <ArrowUpRight
+                      size={16}
+                      className="shrink-0 text-[var(--text-muted)] transition-all duration-300 group-hover:text-[var(--electric)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                    />
                   </div>
-                  <h3 className="text-xl font-bold font-heading mb-2 text-[var(--text-primary)]">{project.title}</h3>
-                  <p className="text-sm text-[var(--text-secondary)] font-light leading-relaxed mb-6 flex-grow font-body">{project.description}</p>
-                  <div className="flex flex-wrap gap-2 mt-auto">
-                    {project.tech.map((t) => (
-                      <span key={t} className="px-2.5 py-1 rounded-lg bg-[var(--bg-app)] border border-[var(--border-color)] text-[11px] font-mono text-[var(--text-muted)]">
-                        {t}
-                      </span>
-                    ))}
+                  <h3 className="text-2xl font-semibold font-heading mb-2 text-[var(--text-primary)]">{project.title}</h3>
+                  <p className="text-sm text-[var(--text-secondary)] font-light leading-relaxed mb-5 flex-grow font-body line-clamp-3">
+                    {lang === 'en' ? project.descriptionEN : project.descriptionFR}
+                  </p>
+                  <div className="pt-4 border-t border-[var(--border-color)]">
+                    <TechBadges tech={project.tech} max={4} />
                   </div>
                 </div>
               </motion.div>
@@ -233,34 +190,35 @@ export default function Projects() {
                 <button
                   onClick={() => setSelectedProject(null)}
                   className="absolute top-4 right-4 p-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-red-500/30 hover:text-red-500 transition-colors cursor-pointer"
-                  aria-label="Fermer"
+                  aria-label={lang === 'en' ? 'Close' : 'Fermer'}
                 >
                   <X size={18} />
                 </button>
 
                 {/* Modal category badge */}
-                <span className="px-3 py-1 rounded-full bg-blue-500/10 text-[var(--electric)] text-xs font-body font-semibold uppercase tracking-wide border border-blue-500/15 w-fit block mb-3">
+                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-[var(--electric)] text-xs font-body font-semibold uppercase tracking-wide border border-blue-500/15 w-fit block mb-3">
+                  <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current" />
                   {selectedProject.category}
                 </span>
 
                 {/* Modal title */}
-                <h3 className="text-2xl md:text-3xl font-bold font-heading mb-4 text-[var(--text-primary)]">
+                <h3 className="text-3xl md:text-4xl font-medium font-heading mb-4 text-[var(--text-primary)]">
                   {selectedProject.title}
                 </h3>
 
                 {/* Modal long description */}
                 <p className="text-sm md:text-base text-[var(--text-secondary)] font-light leading-relaxed mb-6 font-body">
-                  {selectedProject.longDescription}
+                  {lang === 'en' ? selectedProject.longDescriptionEN : selectedProject.longDescriptionFR}
                 </p>
 
                 {/* Key features */}
-                {selectedProject.features && (
+                {(lang === 'en' ? selectedProject.featuresEN : selectedProject.featuresFR) && (
                   <div className="mb-6">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] font-body mb-3">
-                      Fonctionnalités Clés
+                      {lang === 'en' ? 'Key Features' : 'Fonctionnalités Clés'}
                     </h4>
                     <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm text-[var(--text-secondary)] font-body font-light">
-                      {selectedProject.features.map((feat, idx) => (
+                      {(lang === 'en' ? selectedProject.featuresEN : selectedProject.featuresFR).map((feat, idx) => (
                         <li key={idx} className="flex items-start gap-2">
                           <span className="text-[var(--electric)] mt-1 font-bold">•</span>
                           <span>{feat}</span>
@@ -273,15 +231,9 @@ export default function Projects() {
                 {/* Technologies */}
                 <div className="mb-8">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] font-body mb-3">
-                    Technologies Utilisées
+                    {lang === 'en' ? 'Technologies Used' : 'Technologies Utilisées'}
                   </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedProject.tech.map((t) => (
-                      <span key={t} className="px-3 py-1.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-xs font-mono text-[var(--text-muted)]">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
+                  <TechBadges tech={selectedProject.tech} max={selectedProject.tech.length} size="md" />
                 </div>
 
                 {/* Action CTA Buttons */}
@@ -295,7 +247,7 @@ export default function Projects() {
                     className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-2xl font-body text-sm font-semibold hover:shadow-lg hover:shadow-blue-600/20 transition-all cursor-pointer"
                   >
                     <Github size={16} />
-                    Code Source (GitHub)
+                    {lang === 'en' ? 'Source Code (GitHub)' : 'Code Source (GitHub)'}
                   </motion.a>
                   <motion.a
                     href={selectedProject.demoUrl}
@@ -306,7 +258,7 @@ export default function Projects() {
                     className="flex items-center gap-2 px-6 py-3.5 border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] rounded-2xl font-body text-sm font-semibold hover:border-blue-500/40 hover:text-[var(--electric)] transition-all cursor-pointer"
                   >
                     <ExternalLink size={16} />
-                    Voir la Démo Live
+                    {lang === 'en' ? 'View Live Demo' : 'Voir la Démo Live'}
                   </motion.a>
                 </div>
               </motion.div>

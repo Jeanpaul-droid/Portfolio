@@ -1,33 +1,95 @@
-import { useEffect, useState } from 'react';
-import { ArrowRight, PhoneCall, Code, ArrowUpRight } from 'lucide-react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { ArrowRight, PhoneCall, ArrowUpRight } from 'lucide-react';
 import { Github, Linkedin } from './BrandIcons';
 import { motion, AnimatePresence } from 'framer-motion';
-import profilPhoto from '../assets/Profil photo.jpeg';
+import { Link } from 'react-router';
+import moiDetoure from '../assets/moi-detoure.png';
+import { useLang } from '../context/LanguageContext';
+import { gsap, reduceMotion } from '../utils/gsap';
+import HeroBackground from './HeroBackground';
 
-const roles = ['Développeur Informatique', 'Développeur Full-Stack', 'Passionné d\'Algorithmes'];
-
-// Helper pour les transitions inline (évite le variant fonctionnel incompatible avec FM v12)
-const fadeUp = (delay: number) => ({
-  initial: { opacity: 0, y: 32 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.6, delay, ease: [0.25, 0.1, 0.25, 1] as [number, number, number, number] },
-});
+const rolesEN = ['Software Developer', 'Full-Stack Developer', 'Algorithms Enthusiast'];
+const rolesFR = ['Développeur Informatique', 'Développeur Full-Stack', 'Passionné d\'Algorithmes'];
 
 export default function Hero() {
+  const { lang } = useLang();
   const [roleIndex, setRoleIndex] = useState(0);
+  const roles = lang === 'en' ? rolesEN : rolesFR;
+  const rootRef = useRef<HTMLElement>(null);
+  const portraitRef = useRef<HTMLDivElement>(null);
+  const portraitImgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setRoleIndex((prev) => (prev + 1) % roles.length);
     }, 3000);
     return () => clearInterval(interval);
+  }, [roles.length]);
+
+  // GSAP entrance timeline — owns Hero entrance only.
+  // Framer Motion keeps slot-machine roles, hovers and the floating badge.
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root || reduceMotion()) return;
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+      tl.from('[data-hero="badge"]', { y: 24, opacity: 0, duration: 0.7 }, 0.1)
+        .from('[data-hero="title"]', { y: 56, opacity: 0, duration: 1.1 }, 0.2)
+        .from('[data-hero="role"]', { y: 28, opacity: 0, duration: 0.8 }, 0.45)
+        .from('[data-hero="desc"]', { y: 28, opacity: 0, duration: 0.8 }, 0.55)
+        .from('[data-hero="cta"]', { y: 28, opacity: 0, duration: 0.8 }, 0.65)
+        .from('[data-hero="social"]', { y: 20, opacity: 0, duration: 0.7 }, 0.75);
+
+      // Entrée du portrait: monte depuis le bas (y: 100 -> 0), opacity 0 -> 1, scale 1.05 -> 1, durée 1.2s, ease "power3.out"
+      if (portraitRef.current) {
+        gsap.from(portraitRef.current, {
+          y: 100,
+          opacity: 0,
+          scale: 1.05,
+          duration: 1.2,
+          ease: 'power3.out',
+        });
+      }
+
+      // Parallaxe légère à la souris (±15px) avec gsap.quickTo, désactivée sur mobile et si prefers-reduced-motion est activé
+      const mm = gsap.matchMedia();
+      mm.add('(min-width: 1024px)', () => {
+        if (reduceMotion() || !portraitImgRef.current) return;
+
+        const xTo = gsap.quickTo(portraitImgRef.current, 'x', { duration: 0.9, ease: 'power2.out' });
+        const yTo = gsap.quickTo(portraitImgRef.current, 'y', { duration: 0.9, ease: 'power2.out' });
+
+        const handleMouseMove = (e: MouseEvent) => {
+          const rect = root.getBoundingClientRect();
+          const relX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+          const relY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+          const clampedX = Math.max(-1, Math.min(1, relX));
+          const clampedY = Math.max(-1, Math.min(1, relY));
+          xTo(clampedX * 15);
+          yTo(clampedY * 15);
+        };
+
+        const handleMouseLeave = () => {
+          xTo(0);
+          yTo(0);
+        };
+
+        root.addEventListener('mousemove', handleMouseMove);
+        root.addEventListener('mouseleave', handleMouseLeave);
+
+        return () => {
+          root.removeEventListener('mousemove', handleMouseMove);
+          root.removeEventListener('mouseleave', handleMouseLeave);
+        };
+      });
+    }, root);
+    return () => ctx.revert();
   }, []);
 
   return (
-    <section id="home" className="relative min-h-[95vh] flex items-center justify-center py-20 px-4 sm:px-6 pb-28 md:pb-20 overflow-hidden">
-      {/* Background glows */}
-      <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-blue-600/10 blur-[80px] animate-pulse-light z-0" />
-      <div className="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full bg-blue-500/8 blur-[100px] animate-pulse-light z-0" style={{ animationDelay: '2s' }} />
+    <section ref={rootRef} id="home" className="relative min-h-[95vh] flex flex-col items-center justify-center py-20 px-4 sm:px-6 pb-28 md:pb-20 overflow-hidden">
+      {/* "Flowing digital light" background — independent decorative layer */}
+      <HeroBackground />
 
       <div className="container relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-20 max-w-5xl w-full">
 
@@ -35,70 +97,71 @@ export default function Hero() {
         <div className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1 min-w-0">
 
           {/* Badge */}
-          <motion.div
-            {...fadeUp(0)}
+          <div
+            data-hero="badge"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-400 font-body text-xs font-semibold uppercase tracking-wider mb-7"
           >
             <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-            Disponible pour opportunités
-          </motion.div>
+            {lang === 'en' ? 'Available for opportunities' : 'Disponible pour opportunités'}
+          </div>
 
           {/* Full Name */}
-          <motion.h1
-            {...fadeUp(0.1)}
-            className="text-5xl md:text-6xl lg:text-7xl mb-4 font-heading leading-tight"
+          <h1
+            data-hero="title"
+            className="text-6xl md:text-7xl lg:text-8xl mb-4 font-heading font-medium leading-[1.05]"
           >
             de-SOUZA
             <br />
             <span className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 bg-clip-text text-transparent">
               Jeanpaul
             </span>
-          </motion.h1>
+          </h1>
 
-          {/* Slot-machine role subtitle */}
-          <motion.div
-            {...fadeUp(0.2)}
+          {/* Slot-machine role subtitle — width hugs the current word so the
+              whole line stays truly centered on mobile (left-aligned on lg) */}
+          <div
+            data-hero="role"
             className="text-base md:text-2xl font-medium text-[var(--text-secondary)] font-body mb-6 flex items-center justify-center lg:justify-start gap-2 overflow-hidden w-full"
           >
-            <span className="shrink-0">Je suis</span>
-            <div className="relative h-[1.4em] overflow-hidden flex-1 max-w-[300px]">
-              <AnimatePresence mode="wait">
+            <span className="shrink-0">{lang === 'en' ? 'I am' : 'Je suis'}</span>
+            <div className="relative h-[1.4em] overflow-hidden flex-none">
+              <AnimatePresence mode="popLayout" initial={false}>
                 <motion.span
                   key={roleIndex}
                   initial={{ opacity: 0, y: '100%' }}
                   animate={{ opacity: 1, y: '0%' }}
                   exit={{ opacity: 0, y: '-100%' }}
                   transition={{ duration: 0.45, ease: [0.25, 0.1, 0.25, 1] }}
-                  className="absolute inset-0 font-semibold text-[var(--electric)] whitespace-nowrap"
+                  className="block font-semibold text-[var(--electric)] whitespace-nowrap"
                 >
-                  {roles[roleIndex]}
+                  {roles[roleIndex % roles.length]}
                 </motion.span>
               </AnimatePresence>
             </div>
-          </motion.div>
+          </div>
 
           {/* Brief description */}
-          <motion.p
-            {...fadeUp(0.3)}
+          <p
+            data-hero="desc"
             className="text-base md:text-lg text-[var(--text-muted)] max-w-xl mb-10 leading-relaxed font-light font-body"
           >
-            Développeur informatique rigoureux, spécialisé dans l'architecture et le développement d'applications full-stack. Je conçois des solutions performantes, évolutives et adaptées à vos besoins.
-          </motion.p>
+            {lang === 'en'
+              ? 'Rigorous software developer, specialized in architecture and full-stack application development. I build performant, scalable solutions tailored to your needs.'
+              : 'Développeur informatique rigoureux, spécialisé dans l\'architecture et le développement d\'applications full-stack. Je conçois des solutions performantes, évolutives et adaptées à vos besoins.'}
+          </p>
 
           {/* CTA Buttons */}
-          <motion.div
-            {...fadeUp(0.4)}
+          <div
+            data-hero="cta"
             className="flex flex-col sm:flex-row gap-3 mb-8 w-full sm:w-auto"
           >
-            <motion.a
-              href="#projects"
-              whileHover={{ scale: 1.03, y: -2 }}
-              whileTap={{ scale: 0.97 }}
-              className="flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl font-body font-semibold text-sm md:text-base transition-all duration-300 text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:shadow-xl hover:shadow-blue-600/30"
+            <Link
+              to="/projects"
+              className="flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl font-body font-semibold text-sm md:text-base transition-all duration-300 text-white bg-gradient-to-r from-blue-500 to-blue-700 hover:shadow-xl hover:shadow-blue-600/30 hover:-translate-y-0.5"
             >
-              Explorer mon travail
+              {lang === 'en' ? 'Explore my work' : 'Explorer mon travail'}
               <ArrowRight size={18} />
-            </motion.a>
+            </Link>
             <motion.a
               href="tel:+2290156100070"
               whileHover={{ scale: 1.03, y: -2 }}
@@ -106,17 +169,17 @@ export default function Hero() {
               className="flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl font-body font-semibold text-sm md:text-base transition-all duration-300 border border-[var(--border-color)] bg-[var(--bg-card)] hover:border-blue-500/40 hover:text-[var(--electric)]"
             >
               <PhoneCall size={18} className="text-[var(--electric)]" />
-              Me contacter
+              {lang === 'en' ? 'Contact me' : 'Me contacter'}
             </motion.a>
-          </motion.div>
+          </div>
 
           {/* Social Links */}
-          <motion.div
-            {...fadeUp(0.5)}
+          <div
+            data-hero="social"
             className="flex items-center gap-3"
           >
             {[
-              { href: 'https://github.com', icon: <Github size={18} />, label: 'GitHub' },
+              { href: 'https://github.com/Jeanpaul-droid', icon: <Github size={18} />, label: 'GitHub' },
               { href: 'https://linkedin.com', icon: <Linkedin size={18} />, label: 'LinkedIn' },
             ].map((social) => (
               <motion.a
@@ -133,60 +196,30 @@ export default function Hero() {
                 {social.label}
               </motion.a>
             ))}
-            <motion.a
-              href="#contact"
-              whileHover={{ scale: 1.1, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--electric)] hover:border-blue-500/40 transition-all duration-200 font-body text-sm font-medium"
+            <Link
+              to="/contact"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--electric)] hover:border-blue-500/40 hover:-translate-y-0.5 transition-all duration-200 font-body text-sm font-medium"
             >
               <ArrowUpRight size={18} />
               Contact
-            </motion.a>
-          </motion.div>
+            </Link>
+          </div>
         </div>
 
-        {/* RIGHT: Profile photo with glass effect */}
-        <motion.div
-          initial={{ opacity: 0, x: 40, scale: 0.95 }}
-          animate={{ opacity: 1, x: 0, scale: 1 }}
-          transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1], delay: 0.2 }}
-          className="relative flex-shrink-0 lg:block"
+        {/* Portrait détouré — colonne de droite sur desktop, collé au bas de la section */}
+        <div
+          ref={portraitRef}
+          data-hero="portrait"
+          style={{ zIndex: 5 }}
+          className="pointer-events-none select-none z-[5] relative flex justify-center items-end w-full max-w-[90%] mx-auto mt-8 -mb-28 md:-mb-20 lg:mt-0 lg:w-auto lg:max-w-none lg:self-end"
         >
-          {/* Glow derrière la photo */}
-          <div className="absolute inset-[-24px] rounded-[60px] bg-gradient-to-br from-blue-500/45 to-blue-800/25 blur-[70px]" />
-
-          {/* Cadre glass translucide */}
-          <div className="relative p-[6px] rounded-[44px] bg-gradient-to-br from-white/20 via-blue-400/20 to-blue-700/15 border border-white/25 shadow-2xl shadow-blue-700/30 backdrop-blur-sm">
-            <div className="rounded-[38px] overflow-hidden w-[260px] h-[300px] sm:w-[310px] sm:h-[360px] lg:w-[350px] lg:h-[400px] relative">
-              <img
-                src={profilPhoto}
-                alt="de-SOUZA Jeanpaul"
-                className="w-full h-full object-cover object-top"
-              />
-
-              {/* Reflet glass haut */}
-              <div className="absolute top-0 left-0 right-0 h-1/4 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
-
-              {/* Glass overlay bas bien visible */}
-              <div className="absolute bottom-0 left-0 right-0 h-2/5 bg-gradient-to-t from-blue-950/85 via-blue-900/50 to-transparent backdrop-blur-md flex items-end p-5">
-                <div>
-                  <p className="text-white font-heading font-bold text-base leading-tight drop-shadow">de-SOUZA Jeanpaul</p>
-                  <p className="text-blue-300 font-body text-xs mt-1 font-light tracking-wide">Full-Stack Developer</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Floating badge */}
-          <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute -top-4 -right-4 p-3 rounded-2xl glass-effect border border-blue-400/25 shadow-xl backdrop-blur-md"
-          >
-            <Code size={22} className="text-[var(--electric)]" />
-          </motion.div>
-        </motion.div>
-
+          <img
+            ref={portraitImgRef}
+            src={moiDetoure}
+            alt="de-SOUZA Jeanpaul"
+            className="h-full w-auto max-h-[50vh] sm:max-h-[60vh] lg:max-h-[65vh] object-contain object-bottom pointer-events-none select-none"
+          />
+        </div>
       </div>
     </section>
   );

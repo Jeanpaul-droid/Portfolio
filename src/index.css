@@ -1,14 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800;900&family=Luckiest+Guy&display=swap');
-
 @import "tailwindcss";
 
-@theme {
-  --font-heading: 'Luckiest Guy', cursive;
-  --font-body: 'Inter', sans-serif;
-  --font-mono: 'Inter', sans-serif;
+/* Polices chargées via index.html (preconnect + 1 seule requête Google Fonts) :
+   Cormorant Garamond (titres), Inter et Poppins (replis).
+   Newblack (commerciale, absente de Google Fonts) : déposez vos fichiers ici
+   public/fonts/Newblack-Regular.woff2 (+ .woff) pour activer la vraie typo.
+   Si elle ne charge pas, Inter puis Poppins prennent le relais. */
+@font-face {
+  font-family: 'Newblack';
+  src: url('/fonts/Newblack-Regular.woff2') format('woff2'),
+    url('/fonts/Newblack-Regular.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
-  --color-primary: #2563eb;   /* electric blue */
-  --color-secondary: #1d4ed8; /* deeper blue */
+@theme {
+  --font-heading: 'Cormorant Garamond', 'Poppins', 'Georgia', serif;
+  --font-body: 'Newblack', 'Inter', 'Poppins', sans-serif;
+  --font-mono: 'Newblack', 'Inter', 'Poppins', sans-serif;
+
+  --color-primary: #2563eb;
+  /* electric blue */
+  --color-secondary: #1d4ed8;
+  /* deeper blue */
 }
 
 /* Global variables and color custom properties */
@@ -26,6 +40,14 @@
   --electric-glow: rgba(37, 99, 235, 0.25);
 
   --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+
+  --footer-frame: #e2e8f0;
+  --footer-bg: #ffffff;
+  --footer-glow: rgba(37, 99, 235, 0.16);
+  --footer-veil: rgba(37, 99, 235, 0.12);
+  --footer-brand-from: rgba(15, 23, 42, 0.18);
+  --footer-brand-via: rgba(37, 99, 235, 0.45);
+  --footer-brand-to: rgba(37, 99, 235, 0.85);
 }
 
 [data-theme="dark"] {
@@ -42,6 +64,14 @@
   --electric-glow: rgba(59, 130, 246, 0.3);
 
   --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+
+  --footer-frame: #000000;
+  --footer-bg: #0b0b0d;
+  --footer-glow: rgba(59, 130, 246, 0.35);
+  --footer-veil: rgba(59, 130, 246, 0.25);
+  --footer-brand-from: rgba(255, 255, 255, 0.2);
+  --footer-brand-via: rgba(59, 130, 246, 0.45);
+  --footer-brand-to: rgba(59, 130, 246, 0.8);
 }
 
 html {
@@ -58,38 +88,52 @@ html {
 
 body {
   font-family: var(--font-body);
-  font-weight: 300;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg-app);
   color: var(--text-primary);
   line-height: 1.6;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-h1, h2 {
-  font-family: var(--font-heading);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 400;
-  color: var(--text-primary);
-}
+/* Règles élémentaires dans @layer base pour que les utilitaires Tailwind
+   (.font-heading, .font-body, text-*, font-*) priment dessus. */
+@layer base {
+  h1,
+  h2 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    color: var(--text-primary);
+  }
 
-h3, h4, h5, h6 {
-  font-family: var(--font-body);
-  font-weight: 600;
-  color: var(--text-primary);
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-app);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--electric);
 }
@@ -117,21 +161,50 @@ h3, h4, h5, h6 {
   -webkit-text-fill-color: transparent;
 }
 
+.heading-transparent {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
 /* Animations */
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 @keyframes pulse-light {
-  0%, 100% { opacity: 0.15; transform: scale(1); }
-  50% { opacity: 0.35; transform: scale(1.05); }
+
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.35;
+    transform: scale(1.05);
+  }
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
 }
 
 .animate-float {
@@ -146,34 +219,133 @@ h3, h4, h5, h6 {
   animation: blink 1s step-end infinite;
 }
 
+/* GSAP SplitText line masks — padding protects Cormorant descenders from clipping */
+.gsap-line {
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+}
+
 /* Premium Skeleton Shimmer */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
 }
 
 .skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.08) 37%,
-    rgba(255, 255, 255, 0.03) 63%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.03) 25%,
+      rgba(255, 255, 255, 0.08) 37%,
+      rgba(255, 255, 255, 0.03) 63%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite ease-in-out;
 }
 
 [data-theme="light"] .skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(15, 23, 42, 0.03) 25%,
-    rgba(15, 23, 42, 0.08) 37%,
-    rgba(15, 23, 42, 0.03) 63%
-  );
+  background: linear-gradient(90deg,
+      rgba(15, 23, 42, 0.03) 25%,
+      rgba(15, 23, 42, 0.08) 37%,
+      rgba(15, 23, 42, 0.03) 63%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite ease-in-out;
+}
+
+/* ============================================================
+   HERO BACKGROUND — "flowing digital light"
+   Independent decorative layer (z-0) behind the Hero content.
+   Translucent ribbons + ambient washes in the existing blues.
+   ============================================================ */
+
+/* Ambient base wash — huge soft radial glows anchoring the scene */
+.hero-bg-wash {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(closest-side,
+      rgba(37, 99, 235, 0.14),
+      transparent 70%);
+  filter: blur(70px);
+  will-change: opacity, transform;
+}
+
+/* Ribbon wrapper — holds the SVG wave; base tilt lives in the motion
+   keyframes (rotate starts/ends at the layer angle), so no static transform
+   here to avoid fighting the animation. */
+.hero-ribbon {
+  position: absolute;
+  will-change: transform;
+}
+
+/* Soft focus — keeps ribbons atmospheric without erasing their wave shape */
+.hero-ribbon svg {
+  display: block;
+  filter: blur(14px) saturate(1.05);
+}
+
+/* Static render (mobile / reduced motion): same soft focus, base tilt baked
+   via the variant wrapper — a transform that never animates. */
+.hero-ribbon-static {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-ribbon-static svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: blur(14px) saturate(1.05);
+}
+
+.hero-ribbon-a .hero-ribbon-static { transform: rotate(-16deg); }
+.hero-ribbon-b .hero-ribbon-static { transform: rotate(-12deg); }
+.hero-ribbon-c .hero-ribbon-static { transform: rotate(-10deg); }
+.hero-ribbon-thread .hero-ribbon-static { transform: rotate(-14deg); }
+
+/* Per-layer opacity staging (depth hierarchy) */
+.hero-ribbon-a { opacity: 0.55; }
+.hero-ribbon-b { opacity: 0.8; }
+.hero-ribbon-c { opacity: 0.7; }
+.hero-ribbon-thread { opacity: 0.85; }
+
+/* Calm veil — softly quiets the center-left text zone so the
+   content always stays perfectly readable over the ribbons. */
+.hero-calm {
+  background: radial-gradient(58% 60% at 32% 42%, var(--bg-app) 0%, transparent 100%);
+  opacity: 0.55;
+}
+
+/* Light theme: design system unchanged — ribbons readable via multiply blend,
+   washes become soft ambient tints. Same composition, adapted appearance. */
+[data-theme="light"] .hero-ribbon {
+  mix-blend-mode: multiply;
+  opacity: 0.35;
+}
+
+[data-theme="light"] .hero-ribbon-thread {
+  opacity: 0.4;
+}
+
+[data-theme="light"] .hero-calm {
+  background: radial-gradient(58% 60% at 32% 42%,
+      rgba(248, 250, 252, 0.85) 0%,
+      transparent 100%);
+  opacity: 1;
+}
+
+[data-theme="light"] .hero-bg-wash {
+  background: radial-gradient(closest-side,
+      rgba(37, 99, 235, 0.10),
+      transparent 70%);
+  opacity: 0.5;
+}
+
+/* Reduced motion: still every ambient animation, shapes remain layered */
+@media (prefers-reduced-motion: reduce) {
+  .hero-bg .animate-pulse-light {
+    animation: none;
+  }
 }
