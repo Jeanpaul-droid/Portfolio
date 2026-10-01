@@ -9,12 +9,15 @@ interface PageMeta {
   descFR: string;
 }
 
+/** Production origin — keep in sync with index.html, public/sitemap.xml and public/robots.txt. */
+const SITE_ORIGIN = 'https://portfolio-one-mocha-22.vercel.app';
+
 const metaByPath: Record<string, PageMeta> = {
   '/': {
     titleEN: 'de-SOUZA Jeanpaul | Full-Stack Software Developer',
     titleFR: 'de-SOUZA Jeanpaul | Développeur Informatique Full-Stack',
-    descEN: 'Portfolio of de-SOUZA Jeanpaul, full-stack software developer. Performant, scalable web applications tailored to your needs.',
-    descFR: 'Portfolio de de-SOUZA Jeanpaul, développeur informatique full-stack. Applications web performantes et évolutives, adaptées à vos besoins.',
+    descEN: 'Professional portfolio of de-SOUZA Jeanpaul, full-stack software developer based in Cotonou, Benin. I design performant, scalable web applications tailored to your needs.',
+    descFR: 'Portfolio de de-SOUZA Jeanpaul, développeur informatique full-stack basé à Cotonou, Bénin. Conception d\'applications web performantes, évolutives et adaptées à vos besoins.',
   },
   '/about': {
     titleEN: 'About | de-SOUZA Jeanpaul',
@@ -43,20 +46,58 @@ const fallbackMeta: PageMeta = {
   descFR: 'Portfolio de de-SOUZA Jeanpaul, développeur informatique full-stack.',
 };
 
-/** Per-route <title> + meta description, following the global language. */
+function normalizePath(pathname: string): string {
+  if (pathname === '/') return '/';
+  const trimmed = pathname.replace(/\/+$/, '');
+  return trimmed === '' ? '/' : trimmed;
+}
+
+function upsertMeta(attr: 'name' | 'property', key: string, content: string) {
+  let tag = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute(attr, key);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', content);
+}
+
+function setCanonical(href: string) {
+  let link = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+  if (!link) {
+    link = document.createElement('link');
+    link.setAttribute('rel', 'canonical');
+    document.head.appendChild(link);
+  }
+  link.setAttribute('href', href);
+}
+
+function removeCanonical() {
+  document.head.querySelector('link[rel="canonical"]')?.remove();
+}
+
+/** Per-route <title>, meta description and canonical, following the global language. */
 export function usePageMeta() {
   const { pathname } = useLocation();
   const { lang } = useLang();
 
   useEffect(() => {
-    const meta = metaByPath[pathname] ?? fallbackMeta;
-    document.title = lang === 'en' ? meta.titleEN : meta.titleFR;
-    let tag = document.querySelector('meta[name="description"]');
-    if (!tag) {
-      tag = document.createElement('meta');
-      tag.setAttribute('name', 'description');
-      document.head.appendChild(tag);
+    const path = normalizePath(pathname);
+    const meta = metaByPath[path];
+    const pageMeta = meta ?? fallbackMeta;
+
+    document.title = lang === 'en' ? pageMeta.titleEN : pageMeta.titleFR;
+    upsertMeta('name', 'description', lang === 'en' ? pageMeta.descEN : pageMeta.descFR);
+
+    if (meta) {
+      const url = `${SITE_ORIGIN}${path === '/' ? '/' : path}`;
+      upsertMeta('name', 'robots', 'index, follow');
+      upsertMeta('property', 'og:url', url);
+      setCanonical(url);
+    } else {
+      // Unknown route (client-side 404): keep it out of the index.
+      upsertMeta('name', 'robots', 'noindex, follow');
+      removeCanonical();
     }
-    tag.setAttribute('content', lang === 'en' ? meta.descEN : meta.descFR);
   }, [pathname, lang]);
 }
